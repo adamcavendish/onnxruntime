@@ -150,7 +150,10 @@ void SetFloatsAttribute(std::string name, gsl::span<float> value, NodeAttributes
   ONNX_NAMESPACE::AttributeProto a{};
   a.set_name(name);
   a.set_type(ONNX_NAMESPACE::AttributeProto_AttributeType_FLOATS);
-  a.mutable_floats()->Assign(value.begin(), value.end());
+  // use new and Swap to backport RepeatedField::Assign() to 3.14.0
+  // a.mutable_floats()->Assign(value.begin(), value.end());
+  google::protobuf::RepeatedField<float> new_floats(value.begin(), value.end());
+  a.mutable_floats()->Swap(&new_floats);
   attributes.insert_or_assign(std::move(name), std::move(a));
 };
 
